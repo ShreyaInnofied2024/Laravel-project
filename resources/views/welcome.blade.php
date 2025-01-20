@@ -86,5 +86,84 @@
         </button>
     </div>
 </div>
+ </section>
+ 
+
+ <section id="filters" class="container mt-5">
+ <h2 class="text-center mb-4">Our Products</h2>
+    <form method="GET" action="{{ route('home') }}">
+        <div class="row gy-3 align-items-center">
+            <!-- Category Filter -->
+            <div class="col-md-4">
+                <label for="category" class="form-label">Category</label>
+                <select name="category" id="category" class="form-select">
+                    <option value="all">All Categories</option>
+                    @foreach($categories as $category)
+                    <option value="{{ $category->id }}" 
+                        {{ request('category') == $category->id ? 'selected' : '' }}>
+                        {{ $category->name }}
+                    </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Price Range Filters -->
+            <div class="col-md-3">
+                <label for="min_price" class="form-label">Min Price</label>
+                <input type="number" id="min_price" name="min_price" 
+                       class="form-control" placeholder="e.g., 100" 
+                       value="{{ request('min_price') }}">
+            </div>
+            <div class="col-md-3">
+                <label for="max_price" class="form-label">Max Price</label>
+                <input type="number" id="max_price" name="max_price" 
+                       class="form-control" placeholder="e.g., 1000" 
+                       value="{{ request('max_price') }}">
+            </div>
+
+            <!-- Buttons -->
+            <div class="col-md-2 d-flex justify-content-between align-items-end">
+                <button type="submit" class="btn btn-primary w-100 me-2">Filter</button>
+                <a href="{{ route('home') }}" class="btn btn-secondary w-100">Clear</a>
+            </div>
+        </div>
+    </form>
+</section>
+
+<!-- Paginated Products Section -->
+<section id="products" class="container mt-5">
+   
+    <div class="row g-4">
+        @foreach($products as $product)
+        <div class="col-lg-3 col-md-4 col-sm-6">
+            <a href="{{ route('products.show', $product->id) }}" class="text-decoration-none text-dark">
+                <div class="card shadow-sm border-0 h-100">
+                    <img src="{{ asset('images/' . $product->image) }}" 
+                         class="card-img-top img-fluid p-3 rounded" 
+                         alt="{{ $product->name }}" 
+                         style="height: 200px; object-fit: cover;">
+
+                    <div class="card-body d-flex flex-column text-center">
+                        <h6 class="card-title text-truncate">{{ $product->name }}</h6>
+                        <p class="text-muted mb-3">Rs {{ number_format($product->price, 2) }}</p>
+                        <form action="{{ route('cart.add', $product->id) }}" method="POST">
+    @csrf
+    <button type="submit" class="btn btn-primary">Add to Cart</button>
+</form>
+
+                    </div>
+                </div>
+            </a>
+        </div>
+        @endforeach
+    </div>
+
+    <!-- Pagination Links -->
+    <div class="d-flex justify-content-center mt-4">
+        {{ $products->appends(request()->query())->links('pagination::bootstrap-5') }}
+    </div>
+</section>
+
+
 
 @include('inc.footer')

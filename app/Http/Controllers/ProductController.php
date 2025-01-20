@@ -10,10 +10,38 @@ use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
-    public function index()
+    
+    public function index(Request $request)
+    {
+        $query = Product::query();
+
+        // Apply category filter
+        if ($request->has('category') && $request->category != 'all') {
+            $query->where('category_id', $request->category);
+        }
+
+        // Apply price range filter
+        if ($request->has('min_price') && $request->has('max_price')) {
+            $query->whereBetween('price', [$request->min_price, $request->max_price]);
+        }
+
+        // Paginate products
+        $products = $query
+            ->leftJoin('product_images', 'products.id', '=', 'product_images.product_id')
+            ->select('products.*', 'product_images.image_path as image')
+            ->paginate(4);
+
+        // Fetch all categories for the filter dropdown
+        $categories = Category::all();
+
+        return view('welcome', compact('products', 'categories'));
+    }
+
+
+    public function adminProduct()
     {
         $products = Product::with('category')->where('isDeleted', false)->get();
-    return view('product.index', compact('products'));
+    return view('product.admin_product', compact('products'));
     }
 
     public function create()

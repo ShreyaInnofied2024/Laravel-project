@@ -9,58 +9,59 @@
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item active">
                     <a class="nav-link" href="/">Home</a>
-                </li>              
-                    @if (Auth::check())
-                    @if (Auth::user()->user_role !== 'admin')
-                  
-                        <li class="nav-item">
-                            <a class="nav-link" href="/changePassword/>">Change Password</a>
-                        </li>
-                        <li class="nav-item position-relative">
-                            <a class="nav-link" href="/cartController">
-                                Cart
-                                
-                                <span class="badge badge-pill badge-cart">
-                                   
-                                </span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/orderController/history">Order History</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="logout">Logout</a>
-                        </li>
-                        @endif
-                        @endif
-                       
-                        @if (Auth::check())
-                        @if (Auth::user()->user_role == 'admin')   
-                    
-                        <li class="nav-item">
-                            <a class="nav-link" href="/products">Product</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/category">Category</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/users">Users</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="logout">Logout</a>
-                        </li>
-                        
-                    @endif
-                    @endif
+                </li>
+                @if (Auth::check())
+                @if (Auth::user()->user_role !== 'admin')
 
-                    @if (!Auth::check())
-                    <li class="nav-item">
-                        <a class="nav-link" href="register">Register</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="login">Login</a>
-                    </li>
-                    @endif
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('change-password-form', auth()->user()->email) }}">Change Password</a>
+                </li>
+                <!-- Inside your Blade view -->
+                <li class="nav-item position-relative">
+                    <a class="nav-link" href="{{ route('cart.index') }}">
+                        Cart
+                        <span class="badge badge-pill badge-cart">
+                           
+                        </span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="/orderController/history">Order History</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="logout">Logout</a>
+                </li>
+                @endif
+                @endif
+
+                @if (Auth::check())
+                @if (Auth::user()->user_role == 'admin')
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('product_admin') }}">Product</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/category">Category</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/users">Users</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="logout">Logout</a>
+                </li>
+
+                @endif
+                @endif
+
+                @if (!Auth::check())
+                <li class="nav-item">
+                    <a class="nav-link" href="register">Register</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="login">Login</a>
+                </li>
+                @endif
                 <li class="nav-item">
                     <a class="nav-link" href="#contact">Contact</a>
                 </li>

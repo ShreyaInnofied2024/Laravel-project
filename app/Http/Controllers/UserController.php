@@ -62,24 +62,28 @@ class UserController extends Controller
         return redirect()->route('login');
     }
 
-    public function changePassword(Request $request)
+    public function showChangePasswordForm($email)
     {
-        if ($request->isMethod('post')) {
-            $data = $request->validate([
-                'current_password' => 'required|string',
-                'new_password' => 'required|string|min:6|confirmed',
-            ]);
+        return view('user.password', ['email' => $email]);
+    }
 
-            if (!Hash::check($data['current_password'], Auth::user()->password)) {
-                return back()->withErrors(['current_password' => 'Current password is incorrect.']);
-            }
+    public function changePassword(Request $request, $email)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+            'password' => 'required|min:6|confirmed', // Use `confirmed` to ensure password confirmation
+        ]);
 
-            // Auth::user()->update(['password' => Hash::make($data['new_password'])]);
+        $user = User::where('email', $email)->first();
 
-            return redirect()->route('dashboard')->with('success', 'Password changed successfully.');
+        if ($user) {
+            $user->password = Hash::make($request->password);
+            $user->save();
+
+            return redirect()->route('login')->with('success', 'Password changed successfully!');
         }
 
-        return view('user.change_password');
+        return back()->withErrors(['email' => 'User not found.']);
     }
 
     public function manageAddresses()
@@ -93,7 +97,6 @@ class UserController extends Controller
     {
         $data = $request->validate([
             'line1' => 'required|string|max:255',
-            'line2' => 'nullable|string|max:255',
             'city' => 'required|string|max:100',
             'state' => 'required|string|max:100',
             'zip' => 'required|string|max:20',
@@ -101,51 +104,61 @@ class UserController extends Controller
         ]);
 
         $fullAddress = "{$data['line1']}";
-        if (!empty($data['line2'])) {
-            $fullAddress .= ", {$data['line2']}";
-        }
         $fullAddress .= ", {$data['city']}, {$data['state']}, {$data['zip']}, {$data['country']}";
 
-        // Auth::user()->addresses()->create(['address' => $fullAddress]);
+        Auth::user()->addresses()->create(['address' => $fullAddress]);
 
         return back()->with('success', 'Address added successfully!');
     }
+    public function showAddresses()
+    {
+        $userId = auth()->id(); // Get the logged-in user's ID
+        $addresses = Address::where('user_id', $userId)->get(); // Fetch addresses for the user
 
+        return view('orders.index', compact('addresses'));
+    }
+    public function updateAddress(Request $request, $id)
+    {
+        // Validate the request
+        $validated = $request->validate([
+            'line1' => 'required|string|max:255',
+            'city' => 'required|string|max:100',
+            'state' => 'required|string|max:100',
+            'zip' => 'required|string|max:20',
+            'country' => 'required|string|max:100',
+        ]);
+    
+        // Fetch the address and ensure it belongs to the authenticated user
+        $address = Address::where('id', $id)->where('user_id', auth()->id())->firstOrFail();
+    
+        // Update the address field
+        $address->update([
+            'address' => implode(', ', [
+                $validated['line1'],
+                $validated['city'],
+                $validated['state'],
+                $validated['zip'],
+                $validated['country'],
+            ]),
+        ]);
+    
+        // Redirect with success message
+        return redirect()->back()->with('success', 'Address updated successfully!');
+    }
+    
     public function deleteAddress($id)
     {
-        $address = Address::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
+        // Find the address by ID and ensure it belongs to the logged-in user
+        $address = Address::where('id', $id)->where('user_id', auth()->id())->firstOrFail();
+    
+        // Delete the address
         $address->delete();
-
-        return back()->with('success', 'Address deleted successfully!');
+    
+        // Redirect back with success message
+        return redirect()->back()->with('success', 'Address deleted successfully!');
     }
+    
 
-    public function editAddress(Request $request, $id)
-    {
-        $address = Address::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
-
-        if ($request->isMethod('post')) {
-            $data = $request->validate([
-                'line1' => 'required|string|max:255',
-                'line2' => 'nullable|string|max:255',
-                'city' => 'required|string|max:100',
-                'state' => 'required|string|max:100',
-                'zip' => 'required|string|max:20',
-                'country' => 'required|string|max:100',
-            ]);
-
-            $fullAddress = "{$data['line1']}";
-            if (!empty($data['line2'])) {
-                $fullAddress .= ", {$data['line2']}";
-            }
-            $fullAddress .= ", {$data['city']}, {$data['state']}, {$data['zip']}, {$data['country']}";
-
-            $address->update(['address' => $fullAddress]);
-
-            return redirect()->route('user.addresses')->with('success', 'Address updated successfully.');
-        }
-
-        return view('user.edit_address', compact('address'));
-    }
 
     public function listUsers()
     {
@@ -153,4 +166,3 @@ class UserController extends Controller
         return view('user.list', compact('users')); // Pass users to the view
     }
 }
-
