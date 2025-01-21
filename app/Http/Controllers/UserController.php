@@ -148,15 +148,16 @@ class UserController extends Controller
     
     public function deleteAddress($id)
     {
-        // Find the address by ID and ensure it belongs to the logged-in user
+        // Ensure the address belongs to the authenticated user
         $address = Address::where('id', $id)->where('user_id', auth()->id())->firstOrFail();
     
         // Delete the address
         $address->delete();
     
-        // Redirect back with success message
+        // Redirect back with a success message
         return redirect()->back()->with('success', 'Address deleted successfully!');
     }
+    
     
 
 

@@ -35,11 +35,10 @@ class OrderController extends Controller
     public function payment(Request $request)
     {
         $user_id = Auth::id();
-        $cartItems = Cart::where('user_id', $user_id)->get();
-        $address = $request->input('selected_address');
+        $cartItems = $cartItems = Cart::with('product')->where('user_id', $user_id)->get();
+        $address = $request->input('selected_address_id');
         $paymentMethod = $request->input('payment_method');
-        $totalPrice = $cartItems->sum('total_price');
-
+        $totalPrice = Cart::getTotalPrice($user_id);
         // Save order
         $order = Order::create([
             'user_id' => $user_id,
@@ -54,7 +53,7 @@ class OrderController extends Controller
                 'order_id' => $order->id,
                 'product_id' => $cartItem->product_id,
                 'quantity' => $cartItem->quantity,
-                'price' => $cartItem->price,
+                'price' => $cartItem->product->price,
             ]);
         }
 

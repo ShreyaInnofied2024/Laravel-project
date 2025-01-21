@@ -19,6 +19,7 @@ use App\Http\Controllers\CartController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
 Route::get('/', [ProductController::class, 'index'])->name('home');
 
 
@@ -70,11 +71,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/order/{order}', [OrderController::class, 'details'])->name('order.details');
     Route::post('/user/address', [UserController::class, 'addAddress'])->name('user.addAddress');
     Route::put('/addresses/update/{id}', [UserController::class, 'updateAddress'])->name('addresses.update');
-    Route::delete('/addresses/delete/{id}', [UserController::class, 'deleteAddress'])->name('addresses.delete');
-
+    Route::delete('/addresses/delete/{id}', [UserController::class, 'deleteAddress'])->name('addresses.destroy');
+    Route::post('/payment', [OrderController::class, 'payment'])->name('payment');
 });
-
-
-
-
-

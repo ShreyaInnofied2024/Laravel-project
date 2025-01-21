@@ -9,20 +9,16 @@
                 Are you sure you want to delete this address?
             </div>
             <div class="modal-footer">
-                <!-- "Cancel" button to dismiss the modal -->
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                
-                <!-- Form to delete the address -->
                 <form id="deleteAddressForm" method="POST" action="">
                     @csrf
                     @method('DELETE')
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-danger">Delete</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
-
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const deleteModal = document.getElementById('deleteAddressModal');
@@ -33,6 +29,14 @@ document.addEventListener('DOMContentLoaded', function () {
         location.reload();
     });
 });
+
+function deleteAddress(id) {
+    // Set the form action with the correct ID
+    const deleteForm = document.getElementById('deleteAddressForm');
+    deleteForm.action = `/addresses/delete/${id}`; // Ensure this matches your route
+
+    // Open the modal
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteAddressModal'));
+    deleteModal.show();
+}
 </script>
-
-

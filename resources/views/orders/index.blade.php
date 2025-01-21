@@ -271,7 +271,7 @@
                         <div class="accordion-body">
                             @foreach($addresses as $address)
                             @php
-                            $addressParts = explode(',', $address->address); // Split address string if stored as CSV
+                            $addressParts = explode(',', $address->address);
                             @endphp
                             <div class="cart-item d-flex justify-content-between align-items-center">
                                 <p class="mb-0"><span class="text-primary">{{ $address->address }}</span></p>
@@ -297,9 +297,11 @@
 
                                     <!-- Delete Button: Pass the address ID to the modal -->
                                     <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAddressModal"
-                                        onclick="deleteAddress(1)">
+                                        onclick="deleteAddress('{{ $address->id }}')">
                                         Delete
                                     </button>
+
+
                                     @include('address.deleteAddress')
 
 
@@ -375,7 +377,13 @@
                     <h6>Rs {{ number_format($totalPrice - 0, 2) }}</h6>
                 </div>
                 <div class="text-center mt-4">
-                    <button class="btn btn-success btn-lg">Proceed to Payment</button>
+                    <form action="{{ route('payment') }}" method="POST">
+                        @csrf
+                        <input type="hidden" id="selectedAddressText" name="selected_address_id">
+                        <input type="hidden" id="selectedPaymentMethod" name="payment_method">
+                        <button class="btn btn-success btn-lg">Proceed to Payment</button>
+                    </form>
+
                 </div>
             </div>
         </div>
@@ -411,7 +419,7 @@
                     country
                 });
 
-                
+
 
                 // Populate modal fields
                 document.getElementById('editAddressId').value = id;
@@ -428,14 +436,30 @@
     });
 
     function deleteAddress(id) {
-    // Set the form action with the correct ID
-    const deleteForm = document.getElementById('deleteAddressForm');
-    deleteForm.action = `/addresses/delete/${id}`;
+        // Set the form action with the correct ID
+        const deleteForm = document.getElementById('deleteAddressForm');
+        deleteForm.action = `/addresses/delete/${id}`;
 
-    // Open the modal
-    const deleteModal = new bootstrap.Modal(document.getElementById('deleteAddressModal'));
-    deleteModal.show();
-}
+        // Open the modal
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteAddressModal'));
+        deleteModal.show();
+    }
 
+    document.querySelectorAll('.btn-outline-success').forEach(button => {
+    button.addEventListener('click', function(event) {
+        event.preventDefault();
+        const addressText = this.closest('.cart-item').querySelector('p span').textContent.trim(); // Get the address text
+        document.getElementById('selectedAddressText').value = addressText; // Set it in the hidden field
+        alert(`Address selected: ${addressText}`);
+    });
+});
 
-    </script>
+document.querySelectorAll('input[name="payment"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const paymentMethod = this.value; // Get selected payment method
+        document.getElementById('selectedPaymentMethod').value = paymentMethod; // Set it in the hidden field
+        alert('Payment method selected successfully!');
+    });
+});
+
+</script>
