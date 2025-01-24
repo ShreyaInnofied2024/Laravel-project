@@ -28,21 +28,31 @@ class CartController extends Controller
     // Add a product to the cart
     public function add($product_id)
     {
+        // Check if the user is logged in
+        if (!Auth::check()) {
+            // Store the intended product ID in the session for later use
+            session()->put('intended_product_id', $product_id);
+            
+            // Redirect to the login page
+            return redirect()->route('login')->with('error', 'Please log in to add the product to your cart.');
+        }
+    
+        // User is logged in
         $user_id = Auth::id();
         $quantity = 1;
-
+    
         // Check if the product exists
         $product = Product::find($product_id);
         if (!$product) {
-            return redirect()->route('cart.index')->with('error', 'Product not found');
+            return redirect()->route('cart.index')->with('error', 'Product not found.');
         }
-
+    
         // Check if the product is already in the cart
         $cartItem = Cart::getCartItem($user_id, $product_id);
-
+    
         if ($cartItem) {
             $newQuantity = $cartItem->quantity + $quantity;
-
+    
             if ($newQuantity <= $product->quantity) {
                 Cart::updateQuantity($user_id, $product_id, $newQuantity);
             } else {
@@ -51,9 +61,10 @@ class CartController extends Controller
         } else {
             Cart::addToCart($user_id, $product_id, $quantity);
         }
-
+    
         return redirect()->route('cart.index');
     }
+    
 
     // Increase the quantity of a product
     public function increase($product_id)
@@ -108,4 +119,7 @@ class CartController extends Controller
 
         return redirect()->route('cart.index');
     }
+
+
+
 }

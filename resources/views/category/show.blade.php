@@ -1,26 +1,38 @@
 @include('inc.header')
 
-@section('content')
-<div class="container">
-    <h1>Category: {{ $category->name }}</h1>
-    <p>Slug: {{ $category->slug }}</p>
-    
-    <h2>Products in this Category</h2>
-    @if($category->products->count() > 0)
-        <ul class="list-group">
-            @foreach($category->products as $product)
-                <li class="list-group-item">
-                    <strong>{{ $product->name }}</strong> - ${{ number_format($product->price, 2) }}
-                    <span class="badge bg-primary">{{ $product->quantity }} in stock</span>
-                </li>
-            @endforeach
-        </ul>
-    @else
-        <p class="text-muted">No products found in this category.</p>
-    @endif
+<div class="container my-5">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text-uppercase" style="color: #a27053;">{{ $category->name }}</h1>
+        <a href="/category" class="btn btn-outline-secondary">Go Back</a>
+    </div>
 
-    <div class="mt-3">
-        <a href="{{ route('category.index') }}" class="btn btn-secondary">Back to Categories</a>
+    <!-- Product Details Table -->
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>Name</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Type</th>
+                </tr>
+            </thead>
+            <tbody> @foreach($category->products as $product)
+                <tr>
+                    <td>{{ $product->name }}</td>
+                    <td>{{ $product->quantity }}</td>
+                    <td>${{ number_format($product->price, 2) }}</td>
+                    <td>{{ $product->type }}</td>
+                </tr>
+            @endforeach
+            </tbody>
+        </table>
     </div>
 </div>
-@endsection
+
+
+
+
+
+

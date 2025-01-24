@@ -52,8 +52,6 @@ class CategoryController extends Controller
     public function show(Category $category)
     {
         $category->load('products');
-        dd($category);
-        dd($category->products);
         return view('category.show', compact('category'));
     }
 

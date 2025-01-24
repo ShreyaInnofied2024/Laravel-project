@@ -112,7 +112,7 @@
                 </div>
 
                 
-            <a href="{{ route('products.index') }}" class="btn btn-secondary mt-3">Go Back</a>
+            <a href="{{ route('product_admin') }}" class="btn btn-secondary mt-3">Go Back</a>
         </div>
     </section>
 

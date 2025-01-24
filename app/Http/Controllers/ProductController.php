@@ -15,6 +15,9 @@ class ProductController extends Controller
     {
         $query = Product::query();
 
+
+    $query->where('isDeleted', false);
+
         // Apply category filter
         if ($request->has('category') && $request->category != 'all') {
             $query->where('category_id', $request->category);
@@ -27,9 +30,11 @@ class ProductController extends Controller
 
         // Paginate products
         $products = $query
-            ->leftJoin('product_images', 'products.id', '=', 'product_images.product_id')
-            ->select('products.*', 'product_images.image_path as image')
-            ->paginate(4);
+    ->leftJoin('product_images', 'products.id', '=', 'product_images.product_id')
+    ->select('products.*', DB::raw('MIN(product_images.image_path) as image')) // Get the first image
+    ->groupBy('products.id') // Group by product to get only one image
+    ->paginate(4);
+
 
         // Fetch all categories for the filter dropdown
         $categories = Category::all();
@@ -83,7 +88,7 @@ class ProductController extends Controller
         }
 
 
-        return redirect()->route('products.index')->with('success', 'Product added successfully!');
+        return redirect()->route('product_admin')->with('success', 'Product added successfully!');
     }
 
     public function show(Product $product)
@@ -135,7 +140,7 @@ class ProductController extends Controller
             }
         }
 
-        return redirect()->route('products.index')->with('success', 'Product updated successfully!');
+        return redirect()->route('product_admin')->with('success', 'Product updated successfully!');
     }
 
     public function destroy(Product $product)
@@ -143,7 +148,7 @@ class ProductController extends Controller
 
         $product->update(['isDeleted' => true]);
 
-        return redirect()->route('products.index')->with('success', 'Product deleted successfully!');
+        return redirect()->route('product_admin')->with('success', 'Product deleted successfully!');
     }
 
 
@@ -168,20 +173,24 @@ class ProductController extends Controller
     }
 }
 
-public function showDigitalProducts()
-{
-    // Assuming you have a Product model with a relationship to Category
-    $products = Product::with('category')->where('type', 'Digital')->get();
-    
-    return view('product.digital', compact('products'));
-}
+public function indexDigital()
+    {
+        // Fetch the digital products from the database
+        $products = Product::where('type', 'digital')->get();
 
-public function showPhysicalProducts()
+        // Pass the products to the view
+        return view('product.digital', compact('products'));
+    }
+
+
+public function indexPhysical()
 {
-    // Assuming you have a Product model with a relationship to Category
-    $products = Product::with('category')->where('type', 'Physical')->get();
-    
+    // Fetch the digital products from the database
+    $products = Product::where('type', 'physical')->get();
+
+    // Pass the products to the view
     return view('product.physical', compact('products'));
 }
+
 
 }

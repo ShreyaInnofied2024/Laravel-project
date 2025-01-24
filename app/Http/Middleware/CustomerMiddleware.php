@@ -20,7 +20,7 @@ class CustomerMiddleware
         }
 
         // Check if the authenticated user is a customer
-        if (Auth::user()->role !== 'Customer') {
+        if (Auth::user()->user_role !== 'customer') {
             return redirect()->route('home')->with('error', 'Access denied: Customers only.');
         }
         return $next($request);

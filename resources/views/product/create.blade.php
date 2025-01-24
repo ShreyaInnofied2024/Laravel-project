@@ -80,7 +80,7 @@
         </form>
 
         <div class="mt-3 text-center">
-            <a href="{{ route('products.index') }}" class="text-decoration-none text-secondary">Go Back</a>
+            <a href="{{ route('product_admin') }}" class="text-decoration-none text-secondary">Go Back</a>
         </div>
     </div>
 </section>

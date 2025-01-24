@@ -19,17 +19,19 @@
             </thead>
             <tbody>
                 @foreach ($users as $user)
-                    <tr>
-                        <td>{{ htmlspecialchars($user->name) }}</td>
-                        <td>{{ htmlspecialchars($user->email) }}</td>
-                        <td>
-                            <!-- Delete button with confirmation -->
-                            <a href="" class="btn btn-danger btn-sm"
-                               onclick="return confirm('Are you sure you want to delete this user?');">
-                               Delete
-                            </a>
-                        </td>
-                    </tr>
+                <tr>
+                    <td>{{ htmlspecialchars($user->name) }}</td>
+                    <td>{{ htmlspecialchars($user->email) }}</td>
+                    <td>
+                        <!-- Delete button with confirmation -->
+                        <form action="{{ route('users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+
+                    </td>
+                </tr>
                 @endforeach
             </tbody>
         </table>

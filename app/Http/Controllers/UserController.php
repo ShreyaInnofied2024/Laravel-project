@@ -37,20 +37,34 @@ class UserController extends Controller
                 'email' => 'required|email',
                 'password' => 'required|string',
             ]);
-
+    
             if (Auth::attempt($data)) {
                 $request->session()->regenerate();
+    
+                // Check if there is an intended product ID in the session
+                $intendedProductId = session()->pull('intended_product_id'); // Get and remove the value from the session
+    
+                if ($intendedProductId) {
+                    // Redirect to add the product to the cart
+                    return redirect()->route('cart.add', ['product_id' => $intendedProductId]);
+                }
 
+                if (Auth::user()->user_role === 'admin') { // Assuming your User model has 'is_admin' attribute
+                    return redirect()->route('admin.dashboard'); // Redirect to admin dashboard
+                }
+    
+                // Redirect to the intended route or home page
                 return redirect()->intended(route('home'));
             }
-
+    
             return back()->withErrors([
                 'email' => 'Invalid credentials.',
             ]);
         }
-
+    
         return view('user.login');
     }
+    
 
     public function logout(Request $request)
     {
@@ -127,10 +141,10 @@ class UserController extends Controller
             'zip' => 'required|string|max:20',
             'country' => 'required|string|max:100',
         ]);
-    
+
         // Fetch the address and ensure it belongs to the authenticated user
         $address = Address::where('id', $id)->where('user_id', auth()->id())->firstOrFail();
-    
+
         // Update the address field
         $address->update([
             'address' => implode(', ', [
@@ -141,29 +155,46 @@ class UserController extends Controller
                 $validated['country'],
             ]),
         ]);
-    
+
         // Redirect with success message
         return redirect()->back()->with('success', 'Address updated successfully!');
     }
-    
+
     public function deleteAddress($id)
     {
         // Ensure the address belongs to the authenticated user
         $address = Address::where('id', $id)->where('user_id', auth()->id())->firstOrFail();
-    
+
         // Delete the address
         $address->delete();
-    
+
         // Redirect back with a success message
         return redirect()->back()->with('success', 'Address deleted successfully!');
     }
-    
-    
+
+
 
 
     public function listUsers()
     {
         $users = User::where('user_role', 'Customer')->get(); // Fetch all users
         return view('user.list', compact('users')); // Pass users to the view
+    }
+
+    public function destroy($id)
+    {
+        try {
+            // Find the user by ID
+            $user = User::findOrFail($id);
+
+            // Delete the user
+            $user->delete();
+
+            // Redirect with success message
+            return redirect()->route('users.index')->with('success', 'User deleted successfully.');
+        } catch (\Exception $e) {
+            // Handle exceptions (e.g., user not found, database issues)
+            return redirect()->route('users.list')->with('error', 'Failed to delete user. Please try again.');
+        }
     }
 }

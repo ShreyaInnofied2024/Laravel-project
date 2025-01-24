@@ -48,8 +48,8 @@
 
 <div class="d-flex justify-content-between mt-4">
         <div>
-            <a href="{{ route('products.digital') }}" class="btn btn-outline-secondary">Digital</a>
-            <a href="{{ route('products.physical') }}" class="btn btn-outline-secondary">Physical</a>
+            <a href="{{ route('products.indexDigital') }}" class="btn btn-outline-secondary">Digital</a>
+            <a href="{{ route('products.indexPhysical') }}" class="btn btn-outline-secondary">Physical</a>
         </div>
     </div>
 </div>

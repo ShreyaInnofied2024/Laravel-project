@@ -11,6 +11,7 @@ use App\Services\StripeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\PaymentSuccessMail;
 
 class OrderController extends Controller
 {
@@ -18,7 +19,7 @@ class OrderController extends Controller
 
     public function __construct()
     {
-        // $this->stripeServices = new StripeService();
+        \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
     }
 
     public function checkout()
@@ -57,8 +58,7 @@ class OrderController extends Controller
             ]);
         }
 
-        // Clear cart
-        Cart::where('user_id', $user_id)->delete();
+
 
         // Redirect to payment gateway (PayPal/Stripe)
         if ($paymentMethod == 'PayPal') {
@@ -66,57 +66,122 @@ class OrderController extends Controller
         }
 
         if ($paymentMethod == 'Stripe') {
-            $checkoutURL = $this->stripeServices->createCheckoutSession($cartItems, $user_id);
-            return redirect($checkoutURL);
+            $stripeLineItems = [];
+
+            foreach ($cartItems as $cartItem) {
+
+                $stripeLineItems[] = [
+                    'price_data' => [
+                        'currency' => 'usd', // Replace with your currency
+                        'product_data' => [
+                            'name' => $cartItem->product->name, // Product name
+                        ],
+                        'unit_amount' => $cartItem->product->price * 100, // Price in cents
+                    ],
+                    'quantity' => $cartItem->quantity,
+                ];
+            }
+
+            // Create Stripe Checkout Session
+            $checkoutSession = \Stripe\Checkout\Session::create([
+                'payment_method_types' => ['card'],
+                'line_items' => $stripeLineItems, // Correctly structured items
+                'mode' => 'payment',
+                'success_url' => route('payment.success', ['order' => $order->id]),
+                'cancel_url' => route('payment.cancel', ['order' => $order->id]),
+            ]);
+
+            return redirect($checkoutSession->url);
         }
+
+
 
         return redirect()->route('order.cancel');
     }
-
-    public function success()
+    public function paymentSuccess($orderId)
     {
-        $orderId = session('pending_order_id');
         $order = Order::findOrFail($orderId);
 
-        // Update order status and stock
-        $order->update(['status' => 'completed']);
+        // Mark the order as paid
+        $order->update(['status' => 'Paid']);
+        $user_id = Auth::id();  // Assuming you use Auth to get the logged-in user's ID
+        $products = Cart::getUserCart($user_id);
 
-        foreach ($order->items as $item) {
-            $product = Product::find($item->product_id);
-            $product->decrement('quantity', $item->quantity);
+
+        foreach ($products as $product) {
+            $product_id = $product->product_id;
+            $quantity = $product->quantity;
+    
+            $product = Product::findOrFail($product_id);
+
+            if ($product->quantity >= $quantity) {
+                $product->update(['quantity' => $product->quantity - $quantity]);
+            } 
+    
         }
+    
 
-        // Send email confirmation
-        $this->sendOrderConfirmationEmail($order);
+        // Clear the user's cart
+        Cart::where('user_id', Auth::id())->delete();
 
-        return view('order.success');
+        Mail::to($order->user->email)->send(new PaymentSuccessMail($order));
+
+        return view('orders.success', compact('order'));
     }
 
-    public function cancel()
+    public function paymentCancel($orderId)
     {
-        // Handle order cancellation logic
-        return view('order.cancel');
+        $order = Order::findOrFail($orderId);
+
+        // Mark the order as canceled
+        $order->update(['status' => 'Canceled']);
+
+        return view('orders.cancel', compact('order'));
     }
+
 
     public function history()
     {
-        $orders = Auth::user()->orders;
-        return view('order.history', compact('orders'));
-    }
-
-    public function details(Order $order)
-    {
-        return view('order.details', compact('order'));
-    }
-
-    private function sendOrderConfirmationEmail(Order $order)
-    {
         $user = Auth::user();
-        $emailData = [
-            'order' => $order,
-            'user' => $user,
-        ];
 
-        // Mail::to($user->email)->send(new OrderConfirmationEmail($emailData));
+        // Retrieve all orders for the logged-in user
+        $orders = $user->orders()->with('items.product')->get();
+
+        return view('orders.history', compact('orders'));
     }
+
+
+    public function details($id)
+    {
+
+        $orderInfo = Order::findOrFail($id);
+        $orderItems = OrderItems::with('product') // Assuming you have a relationship set up for product
+            ->where('order_id', $id)
+            ->get();
+
+        return view('orders.details', compact('orderInfo', 'orderItems'));
+    }
+
+
+    public function admin_index()
+    {
+        $orders = Order::with('user')->whereIn('status', ['Paid', 'Out for Delivery', 'Completed'])->paginate(10); // Fetch orders with user info for pagination
+        return view('admin.orders.index', compact('orders'));
+    }
+
+    // Update order status
+    public function admin_update(Request $request, $id)
+    {
+        $order = Order::findOrFail($id);
+
+        $request->validate([
+            'status' => 'required|in:Processing,Out for Delivery,Completed',
+        ]);
+
+        $order->status = $request->status;
+        $order->save();
+
+        return back()->with('success', 'Order status updated successfully.');
+    }
+
 }
