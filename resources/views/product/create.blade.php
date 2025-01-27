@@ -18,8 +18,13 @@
 <section id="login" class="d-flex justify-content-center align-items-start py-5" style="min-height: 100vh;">
     <div class="login-container bg-white p-4 rounded shadow-sm w-100" style="max-width: 500px;">
         <h2 class="text-center mb-4" style="color: #a27053;">Add Product</h2>
-        
-        <form id="product" action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data">
+
+        @if(auth()->user()->user_role === 'admin')
+            <form id="product" action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data">
+        @elseif(auth()->user()->user_role === 'seller')
+            <form id="product" action="{{ route('seller.products.store') }}" method="POST" enctype="multipart/form-data">
+        @endif
+
             @csrf
             <div class="mb-3">
                 <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror" 
@@ -80,10 +85,15 @@
         </form>
 
         <div class="mt-3 text-center">
+        @if(auth()->user()->user_role === 'admin')
             <a href="{{ route('product_admin') }}" class="text-decoration-none text-secondary">Go Back</a>
+            @elseif(auth()->user()->user_role === 'seller')
+            <a href="{{ route('seller.product_admin') }}" class="text-decoration-none text-secondary">Go Back</a>
+            @endif
         </div>
     </div>
 </section>
+
 
 <script>
     let selectedFiles = [];

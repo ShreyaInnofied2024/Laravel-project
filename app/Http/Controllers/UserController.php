@@ -52,6 +52,9 @@ class UserController extends Controller
                 if (Auth::user()->user_role === 'admin') { // Assuming your User model has 'is_admin' attribute
                     return redirect()->route('admin.dashboard'); // Redirect to admin dashboard
                 }
+                if (Auth::user()->user_role === 'seller') { // Assuming your User model has 'is_admin' attribute
+                    return redirect()->route('seller.dashboard'); // Redirect to admin dashboard
+                }
     
                 // Redirect to the intended route or home page
                 return redirect()->intended(route('home'));
@@ -172,29 +175,53 @@ class UserController extends Controller
         return redirect()->back()->with('success', 'Address deleted successfully!');
     }
 
+    // public function index()
+    // {
+    //     $users = User::all(); // Fetch all users
+    //     return view('users.index', compact('users'));
+    // }
 
+    public function becomeSeller($id)
+    {
+        $user = User::findOrFail($id);
+        $user->user_role = 'seller';
+        $user->save();
+
+        return redirect()->route('users.list')->with('success', 'User has been updated to Seller.');
+    }
+
+    public function deactivateSeller($id)
+    {
+        $user = User::findOrFail($id);
+        $user->user_role = 'customer'; // Or any default role
+        $user->save();
+
+        return redirect()->route('users.list')->with('success', 'Seller has been deactivated.');
+    }
+
+    // public function destroy($id)
+    // {
+    //     $user = User::findOrFail($id);
+    //     $user->delete();
+
+    //     return redirect()->route('users.list')->with('success', 'User has been deleted.');
+    // }
 
 
     public function listUsers()
     {
-        $users = User::where('user_role', 'Customer')->get(); // Fetch all users
+        $users = User::whereIn('user_role', ['Customer', 'Seller'])->get(); // Fetch all users
         return view('user.list', compact('users')); // Pass users to the view
     }
 
-    public function destroy($id)
+
+    public function destroy(User $user)
     {
-        try {
-            // Find the user by ID
-            $user = User::findOrFail($id);
-
-            // Delete the user
-            $user->delete();
-
-            // Redirect with success message
-            return redirect()->route('users.index')->with('success', 'User deleted successfully.');
-        } catch (\Exception $e) {
-            // Handle exceptions (e.g., user not found, database issues)
-            return redirect()->route('users.list')->with('error', 'Failed to delete user. Please try again.');
-        }
+        // $user->orders()->delete();
+        $user->delete();
+    
+        return redirect()->route('users.list')
+            ->with('success', 'Category deleted successfully.');   //
     }
+
 }

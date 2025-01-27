@@ -22,7 +22,7 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 @if (Auth::check())
-                @if (Auth::user()->user_role !== 'admin')
+                @if (Auth::user()->user_role == 'customer')
                 <li class="nav-item active">
                     <a class="nav-link" href="/">Home</a>
                 </li>
@@ -70,6 +70,25 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/admin/orders">Orders</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="logout">Logout</a>
+                </li>
+
+                @endif
+                @endif
+
+                @if (Auth::check())
+                @if (Auth::user()->user_role == 'seller')
+                <li class="nav-item active">
+                    <a class="nav-link" href="{{route('admin.dashboard')}}">Home</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('seller.product_admin') }}">Product</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="seller/category">Category</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="logout">Logout</a>

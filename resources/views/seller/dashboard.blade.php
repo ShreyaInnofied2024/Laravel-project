@@ -3,7 +3,7 @@
     <div class="row">
         <div class="col-12 text-center mb-4">
             
-            <h2 class="text-uppercase" style="color: #a27053;">Admin Dashboard</h2>
+            <h2 class="text-uppercase" style="color: #a27053;">Seller Dashboard</h2>
             
         </div>
 

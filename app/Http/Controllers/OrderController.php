@@ -124,7 +124,7 @@ class OrderController extends Controller
         // Clear the user's cart
         Cart::where('user_id', Auth::id())->delete();
 
-        Mail::to($order->user->email)->send(new PaymentSuccessMail($order));
+        // Mail::to($order->user->email)->send(new PaymentSuccessMail($order));
 
         return view('orders.success', compact('order'));
     }

@@ -7,14 +7,15 @@
         <a href="{{ route('home') }}" class="btn btn-outline-secondary">Go Back</a>
     </div>
 
-    <!-- Product Details Table -->
+    <!-- User Details Table -->
     <div class="table-responsive">
         <table class="table table-striped table-bordered">
             <thead class="table-dark">
                 <tr>
                     <th>Name</th>
                     <th>Email</th>
-                    <th>Action</th> <!-- Column for delete button -->
+                    <th>Role</th>
+                    <th>Action</th> <!-- Column for action buttons -->
                 </tr>
             </thead>
             <tbody>
@@ -22,14 +23,31 @@
                 <tr>
                     <td>{{ htmlspecialchars($user->name) }}</td>
                     <td>{{ htmlspecialchars($user->email) }}</td>
+                    <td>{{ ucfirst($user->user_role) }}</td>
                     <td>
-                        <!-- Delete button with confirmation -->
-                        <form action="{{ route('users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this user?');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-danger">Delete</button>
-                        </form>
+                        <div class="d-flex gap-2">
+                            <!-- Role Toggle Button -->
+                            @if ($user->user_role === 'seller')
+                            <form action="{{ route('users.deactivate', $user->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to deactivate this seller?');">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" class="btn btn-warning">Deactivate Seller</button>
+                            </form>
+                            @else
+                            <form action="{{ route('users.becomeSeller', $user->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to make this user a seller?');">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" class="btn btn-success">Be Seller</button>
+                            </form>
+                            @endif
 
+                            <!-- Delete Button -->
+                            <form action="{{ route('users.destroy', $user->id) }}" method="POST" style="display:inline;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
                 @endforeach
