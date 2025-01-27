@@ -21,7 +21,6 @@ class CartController extends Controller
         $cartItems = Cart::getUserCart($user_id);
         $totalItems = Cart::getTotalItems($user_id);
         $totalPrice = Cart::getTotalPrice($user_id);
-
         return view('cart.view', compact('cartItems', 'totalItems', 'totalPrice'));
     }
 

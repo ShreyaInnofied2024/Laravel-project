@@ -21,7 +21,7 @@ class Cart extends Model
     // Get the cart items for a user
     public static function getUserCart($user_id)
     {
-        return self::where('user_id', $user_id)->with('product')->get();
+        return self::where('user_id', $user_id)->with('product.images')->get();
     }
 
     // Get the total number of items in the cart

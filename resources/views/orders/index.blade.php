@@ -244,7 +244,7 @@
                         <div class="accordion-body">
                             @foreach($cartItems as $item)
                             <div class="cart-item">
-                                <img src="{{ asset('storage/' . $item->image_path) }}" alt="{{ $item->product_name }}" class="img-fluid">
+                                <img src="{{ asset('storage/' . $item->product->images->first()->image_path) }}" alt="{{ $item->product_name }}" class="img-fluid">
                                 <div class="cart-item-details">
                                     <h5>{{ $item->product->name  }}</h5>
                                     <p class="text-muted">{{ $item->product_description }}</p>

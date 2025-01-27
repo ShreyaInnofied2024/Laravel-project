@@ -90,10 +90,9 @@
                 <div class="col-md-8">
                     @foreach($cartItems as $item)
                         <div class="cart-item">
-                            <img src="{{ asset('storage/' . $item->product->image_path) }}" alt="{{ $item->product_name }}" class="img-fluid">
+                            <img src="{{ asset('storage/' . $item->product->images->first()->image_path) }}" alt="{{ $item->product_name }}" class="img-fluid">
                             <div class="cart-item-details">
                                 <h5>{{ $item->product->name  }}</h5>
-                                <p class="text-muted">{{ $item->product_description }}</p>
                                 <p>
                                     <span class="text-muted text-decoration-line-through">Rs {{ number_format($item->original_price, 2) }}</span>
                                     <span class="text-success">Rs {{ number_format($item->product->price, 2) }}</span>
